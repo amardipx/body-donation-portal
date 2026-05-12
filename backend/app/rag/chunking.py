@@ -8,7 +8,7 @@ _SPLITTER = RecursiveCharacterTextSplitter(
 )
 
 
-def chunk_pages(pages_text: list[str], doc_id: str, title: str, document_id: str) -> list[dict]:
+def chunk_pages(pages_text: list[str], doc_id: str, title: str, document_type: str) -> list[dict]:
     
     chunks = []
     chunk_index = 0
@@ -26,11 +26,11 @@ def chunk_pages(pages_text: list[str], doc_id: str, title: str, document_id: str
             chunks.append({
                 "text": chunk_text,
                 "metadata": {
-                    "doc_id":      doc_id,
-                    "page":        page_num,
+                    "doc_id": doc_id,
+                    "page": page_num,
                     "chunk_index": chunk_index,
                     'title': title,
-                    "document_id": document_id
+                    "document_type": document_type
                 },
             })
 
