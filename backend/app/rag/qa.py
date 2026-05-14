@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
-from app.rag.ingest import INDEX_NAME, NAME_SPACE
+from ingest import INDEX_NAME, NAME_SPACE
 
 load_dotenv()
 
@@ -23,15 +23,19 @@ _llm = ChatGroq(
 )
 
 _PROMPT = ChatPromptTemplate.from_template("""
-You are a legal and policy assistant.
+You are an assistant that helps users understand
+body donation and organ transplantation regulations in India.
 
-Answer the question ONLY using the provided context.
+Use the provided context to answer the user's question.
 
-Rules:
-- Do not make up information.
-- Keep the answer concise and clear.
+Instructions:
+- Keep answers short and precise.
+- Maximum 3-4 sentences.
+- Use simple and clear language.
 - Fix OCR mistakes if necessary.
-- If answer is not present in context, say:
+- If the context contains relevant information, summarize it clearly.
+- If the context does not contain enough information,
+  say:
   "I could not find this in the documents."
 
 Context:
@@ -39,11 +43,13 @@ Context:
 
 Question:
 {question}
+
+Answer:
 """)
 
 def _format_chunk(chunks) -> str:
     
-    return "\n\n".join([chunk["text"] for chunk in chunks])
+    return "\n\n".join([chunk.page_content for chunk in chunks])
 
 
 def _extract_references(chunks) -> list[str]:
@@ -99,3 +105,9 @@ def answer(question: str, top_k: int = 5, filter: dict = None) -> dict:
         "answer": response.strip(),
         "references": reference,
         }
+    
+if __name__ == "__main__":
+    question = "What are Offences and Penalties ?"
+    result = answer(question)
+    print("Answer:", result["answer"])
+    print("References:", result["references"])

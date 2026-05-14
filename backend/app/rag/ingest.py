@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
-from app.rag.chunking import chunk_pages
-from app.rag.extractor import extract_text_pages
+from chunking import chunk_pages
+from extractor import extract_text_pages
 
 load_dotenv()
 
@@ -52,7 +52,8 @@ def _create_vectors(chunks: list[dict], embeddings: list[list[float]]) -> list[d
     vectors = []
     for chunk, embedding in zip(chunks, embeddings):
         
-        metadata = chunk["metadata"]
+        metadata = chunk["metadata"].copy()
+        metadata["text"] = chunk["text"]
         
         vector_id = f"{metadata['doc_id']}_{metadata['page']}_{metadata['chunk_index']}"
         
@@ -100,3 +101,14 @@ def reindex_document(pdf_path: str, doc_id: str, title: str, document_type: str)
     
     delete_document_vectors(doc_id)
     index_document(pdf_path, doc_id, title, document_type)
+    
+
+if __name__ == "__main__":
+    # Example usage
+    pdf_path = "backend\\app\\rag\\THOA_1994.pdf"
+    doc_id = "doc123"
+    title = "Sample Document"
+    document_type = "law"
+    
+    index_document(pdf_path, doc_id, title, document_type)
+    #delete_document_vectors(doc_id)
