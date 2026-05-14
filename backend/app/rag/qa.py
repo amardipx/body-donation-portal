@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
-from ingest import INDEX_NAME, NAME_SPACE
+from app.rag.ingest import INDEX_NAME, NAME_SPACE
 
 load_dotenv()
 
@@ -21,6 +21,13 @@ _llm = ChatGroq(
     max_retries=2,
     api_key=os.getenv("GROQ_API_KEY"),
 )
+
+_vectorstore = PineconeVectorStore(
+        index_name=INDEX_NAME,
+        embedding=_embeddings,
+        namespace=NAME_SPACE,
+        pinecone_api_key=os.getenv("PINECONE_API_KEY"),
+    )
 
 _PROMPT = ChatPromptTemplate.from_template("""
 You are an assistant that helps users understand
@@ -74,19 +81,12 @@ def answer(question: str, top_k: int = 5, filter: dict = None) -> dict:
     if not question.strip():
         return {"answer": "Please provide a question.", "references": []}
     
-    vectorstore = PineconeVectorStore(
-        index_name=INDEX_NAME,
-        embedding=_embeddings,
-        namespace=NAME_SPACE,
-        pinecone_api_key=os.getenv("PINECONE_API_KEY"),
-    )
-    
     search_kwargs = {"k": top_k}
     
     if filter:
         search_kwargs["filter"] = filter
     
-    retriever = vectorstore.as_retriever(search_kwargs=search_kwargs)
+    retriever = _vectorstore.as_retriever(search_kwargs=search_kwargs)
     
     retrieved_chunks = retriever.invoke(question)
     
@@ -107,7 +107,7 @@ def answer(question: str, top_k: int = 5, filter: dict = None) -> dict:
         }
     
 if __name__ == "__main__":
-    question = "What are Offences and Penalties ?"
+    question = "What are offences and penalties?"
     result = answer(question)
     print("Answer:", result["answer"])
     print("References:", result["references"])

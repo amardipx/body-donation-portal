@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
-from chunking import chunk_pages
-from extractor import extract_text_pages
+from app.rag.chunking import chunk_pages
+from app.rag.extractor import extract_text_pages
 
 load_dotenv()
 
