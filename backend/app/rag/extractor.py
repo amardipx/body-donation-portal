@@ -53,15 +53,19 @@ def _page_to_pil(page: fitz.Page, dpi: int = 300) -> Image.Image: # Render a PyM
 
 
 # Core extraction
-def extract_text_pages(pdf_path: str, use_ocr: bool = True) -> list[str]:
-    
-    pdf_file = Path(pdf_path)
-    if not pdf_file.exists():
-        raise FileNotFoundError(f"PDF not found: {pdf_file}")
+def extract_text_pages(pdf_path: str | bytes, use_ocr: bool = True) -> list[str]:
 
     pages_text: list[str] = []
-
-    with fitz.open(str(pdf_file)) as doc:
+    
+    if isinstance(pdf_path, bytes):
+        doc = fitz.open(stream=pdf_path, filetype="pdf")
+    else:
+         pdf_file = Path(pdf_path)
+         if not pdf_file.exists():
+             raise FileNotFoundError("PDF file not found at the specified path.")
+         doc = fitz.open(str(pdf_file))
+         
+    with doc:
         for page_num, page in enumerate(doc, start=1):
 
             #PyMuPDF + OCR for images within page

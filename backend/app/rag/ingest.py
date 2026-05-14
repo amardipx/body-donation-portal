@@ -67,13 +67,13 @@ def _create_vectors(chunks: list[dict], embeddings: list[list[float]]) -> list[d
 
 
 # Main Ingestion Function
-def index_document(pdf_path: str, doc_id: str, title: str, document_type: str, ) -> None:
+def index_document(pdf_bytes: str | bytes, doc_id: str, title: str, document_type: str, ) -> None:
     
     _ensure_index()
     
     index = _pc.Index(INDEX_NAME)
     
-    pages_text = extract_text_pages(pdf_path)
+    pages_text = extract_text_pages(pdf_bytes)
     
     chunks = chunk_pages(pages_text, doc_id, title, document_type)
     if not chunks:
@@ -97,7 +97,7 @@ def delete_document_vectors(doc_id: str) -> None:
 
 
 # Reindexing Function
-def reindex_document(pdf_path: str, doc_id: str, title: str, document_type: str) -> None:
+def reindex_document(pdf_path: str | bytes, doc_id: str, title: str, document_type: str) -> None:
     
     delete_document_vectors(doc_id)
     index_document(pdf_path, doc_id, title, document_type)
@@ -105,10 +105,11 @@ def reindex_document(pdf_path: str, doc_id: str, title: str, document_type: str)
 
 if __name__ == "__main__":
     # Example usage
-    pdf_path = "backend\\app\\rag\\THOA_1994.pdf"
+    with open("app/rag/test_doc/THOA_1994.pdf", "rb") as f:
+        pdf_bytes = f.read()
     doc_id = "doc123"
     title = "Sample Document"
     document_type = "law"
     
-    index_document(pdf_path, doc_id, title, document_type)
-    #delete_document_vectors(doc_id)
+    #index_document(pdf_bytes, doc_id, title, document_type)
+    delete_document_vectors(doc_id)
