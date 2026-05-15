@@ -30,19 +30,17 @@ _vectorstore = PineconeVectorStore(
     )
 
 _PROMPT = ChatPromptTemplate.from_template("""
-You are an assistant that helps users understand
-body donation and organ transplantation regulations in India.
+You are an assistant for the Body Donation Portal of India.
+You help users understand body donation procedures, regulations, and portal policies.
 
-Use the provided context to answer the user's question.
+Answer the question using ONLY the provided context below.
 
-Instructions:
-- Keep answers short and precise.
-- Maximum 3-4 sentences.
-- Use simple and clear language.
-- Fix OCR mistakes if necessary.
-- If the context contains relevant information, summarize it clearly.
-- If the context does not contain enough information,
-  say:
+Rules:
+- Be concise — maximum 4-5 sentences or a short numbered list if steps are involved.
+- Use simple, clear language suitable for the general public.
+- Fix obvious OCR errors (e.g. broken words, missing spaces) when reading the context.
+- Do not make up or infer information beyond what is in the context.
+- If the context does not contain the answer, respond with exactly:
   "I could not find this in the documents."
 
 Context:
@@ -59,21 +57,24 @@ def _format_chunk(chunks) -> str:
     return "\n\n".join([chunk.page_content for chunk in chunks])
 
 
-def _extract_references(chunks) -> list[str]:
+def _extract_references(chunks) -> str:
     
-    seen = set()
-    references = []
+    doc_pages = {}
     
     for chunk in chunks:
-        title  = chunk.metadata.get("title", "Unknown Title")
-        page = chunk.metadata.get("page", "?")
+        title = chunk.metadata.get("title", "Unknown Title")
+        page = int(chunk.metadata.get("page", 0))
         
-        key = (title, page)
-        if key not in seen:
-            seen.add(key)
-            references.append(f"{title} (Page {page})")
+        if title not in doc_pages:
+            doc_pages[title] = set()
+        doc_pages[title].add(page)
     
-    return references
+    parts = []
+    for title, pages in doc_pages.items():
+        sorted_pages = ", ".join(str(p) for p in sorted(pages))
+        parts.append(f"{title}: page {sorted_pages}")
+    
+    return " | ".join(parts)
 
 
 def answer(question: str, top_k: int = 5, filter: dict = None) -> dict:
@@ -107,7 +108,7 @@ def answer(question: str, top_k: int = 5, filter: dict = None) -> dict:
         }
     
 if __name__ == "__main__":
-    question = "What are offences and penalties?"
+    question = "What is the procedure for donation?"
     result = answer(question)
     print("Answer:", result["answer"])
     print("References:", result["references"])

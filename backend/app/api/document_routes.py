@@ -1,12 +1,10 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.database import Base, engine, get_db
+from app.db.database import get_db
 from app.db.models import RagFile, DocumentType
 from app.rag.rag_storage import upload_document, delete_document, download_document
 from app.rag.ingest import index_document, delete_document_vectors
 
-# Temporary — move to main.py later
-Base.metadata.create_all(bind=engine)
 
 router = APIRouter(
     prefix="/documents",
