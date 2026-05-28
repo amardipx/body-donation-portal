@@ -20,7 +20,7 @@ class RagFile(Base):
  
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     title = Column( String, nullable=False)
-    document_type = Column(SAEnum(DocumentType, name="document_type"), nullable=False, index=True)
+    document_type = Column(String(20), nullable=False, index=True)
     file_path = Column(String, nullable=False, unique=True)
     file_hash = Column(String(64), nullable=False, unique=True, index=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
