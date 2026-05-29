@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
-from app.rag.ingest import INDEX_NAME, NAME_SPACE
+from app.rag.ingest import INDEX_NAME, NAME_SPACE, _ensure_index
 
 load_dotenv()
 
@@ -21,6 +21,8 @@ _llm = ChatGroq(
     max_retries=2,
     api_key=os.getenv("GROQ_API_KEY"),
 )
+
+_ensure_index()
 
 _vectorstore = PineconeVectorStore(
         index_name=INDEX_NAME,
