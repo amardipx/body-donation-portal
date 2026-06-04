@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.document_routes import router as document_router
 from app.api.rag_routes import router as rag_router
+from app.api.auth_routes import router as auth_router
 
 
 app = FastAPI()
@@ -8,6 +9,7 @@ app = FastAPI()
 
 app.include_router(document_router)
 app.include_router(rag_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
