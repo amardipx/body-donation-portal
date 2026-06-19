@@ -20,7 +20,7 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
         email=user.email,
         phone=user.phone,
         password_hash=hash_password(user.password),
-        role="donor",
+        role=user.role.value,
     )
 
     db.add(new_user)
