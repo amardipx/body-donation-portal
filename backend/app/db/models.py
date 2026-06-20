@@ -99,8 +99,6 @@ class Donor(Base):
     gender = Column(String(20), nullable=False)
     blood_type = Column(String(20), nullable=False)
 
-    occupation = Column(String(100), nullable=True)
-
     address_line_1 = Column(String(255), nullable=False)
     address_line_2 = Column(String(255), nullable=True)
 
