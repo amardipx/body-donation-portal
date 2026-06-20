@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import User
+from app.db.models import User, Donor
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
 
@@ -19,8 +19,23 @@ def submit_consent(
 ):
     if current_user.role != "donor":
         raise HTTPException(status_code=403, detail="Only donors can submit consent forms.")
+    donor = Donor(
+        user_id=current_user.id,
+        gender=consent_data.gender.value,
+        date_of_birth=consent_data.date_of_birth,
+        blood_type=consent_data.blood_type.value,
+        address=consent_data.address,
+        city=consent_data.city,
+        state=consent_data.state,
+        zip_code=consent_data.zip_code,
+        country=consent_data.country,
+        preferred_institution=consent_data.preferred_institution,
+    )
+
     return {
-        "message": "Consent endpoint reached",
+        "message": "Donor object created",
         "user": current_user.email,
-        "role": current_user.role
+        "gender": donor.gender,
+        "blood_type": donor.blood_type,
+        "city": donor.city,
     }

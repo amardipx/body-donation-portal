@@ -1,6 +1,6 @@
 import uuid
 import enum
-from sqlalchemy import Boolean, Column, DateTime, Enum as SAEnum ,String, ForeignKey
+from sqlalchemy import Boolean, Column, Date, DateTime, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
@@ -89,21 +89,38 @@ class Donor(Base):
 
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     user_id = Column( UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    first_name = Column(String(50), nullable=False)
+    middle_name = Column(String(50), nullable=True)
+    last_name = Column(String(50), nullable=False)
+
+    parent_name = Column(String(100), nullable=False)
+
+    date_of_birth = Column(Date, nullable=False)
     gender = Column(String(20), nullable=False)
-    date_of_birth = Column(DateTime, nullable=False)
     blood_type = Column(String(20), nullable=False)
-    address = Column(String(255), nullable=False)
+
+    occupation = Column(String(100), nullable=True)
+
+    address_line_1 = Column(String(255), nullable=False)
+    address_line_2 = Column(String(255), nullable=True)
+
     city = Column(String(100), nullable=False)
+    district = Column(String(100), nullable=False)
     state = Column(String(100), nullable=False)
     zip_code = Column(String(20), nullable=False)
-    country = Column(String(100), nullable=False)
+    country = Column(String(100), nullable=False, default="India")
+
+    identity_type = Column(String(50), nullable=False)
+    identity_number = Column(String(100), nullable=False)
+
+    declaration_accepted = Column(Boolean, nullable=False)
     preferred_institution = Column(UUID(as_uuid=True), ForeignKey("institutions.id"), nullable=True)
-    status = Column(String(20), nullable=False, default= "pending")
+    status = Column(String(20), nullable=False, default=DonorStatus.pending.value)
     is_active = Column(Boolean, default=True)
     
     user = relationship("User", back_populates="donor")
     institution = relationship("Institution", back_populates="donor")
-    consent = relationship("Consent", back_populates="donor", cascade="all, delete-orphan")
+    consent = relationship("Consent", back_populates="donor", uselist=False, cascade="all, delete-orphan")
     family_members = relationship("Family_Member", back_populates="donor")
     certificates = relationship("Certificate", back_populates="donor", cascade="all, delete-orphan")
 
@@ -122,8 +139,8 @@ class Consent(Base):
     __tablename__ = "consents"
 
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
-    status = Column(String(20), nullable=False, default="pending")
+    donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False, unique=True)
+    status = Column(String(20), nullable=False, default=ConsentStatus.pending_witness.value)
     signed_at = Column(DateTime(timezone=True))
     signature_hash = Column(String(64), unique=True)
     signature_file_path = Column(String, nullable=True)
@@ -156,6 +173,8 @@ class Consent_Witness(Base):
     phone = Column(String(20), nullable=False)
     witness_verified = Column(Boolean, default=False)
     verified_at = Column(DateTime(timezone=True))
+    verification_token = Column(String(255), unique=True)
+    verification_sent_at = Column(DateTime(timezone=True))
     
     consent = relationship("Consent", back_populates="witnesses")
 
