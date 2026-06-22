@@ -41,6 +41,20 @@ def submit_consent(
             detail="Exactly 2 witnesses are required."
         )
 
+    emails = [w.email for w in consent_data.witnesses]
+    if len(set(emails)) != 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Witness email addresses must be unique"
+        )
+
+    phones = [w.phone for w in consent_data.witnesses]
+    if len(set(phones)) != 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Witness phone numbers must be unique"
+        )
+
     donor = Donor(
         user_id=current_user.id,
 
@@ -120,7 +134,7 @@ def verify_witness(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invalid verification token")
     
     if witness.witness_verified:
-        raise HTTPException(status_code=400, detail="Witness already verified")
+        raise HTTPException(status_code=409, detail="Witness already verified")
     
     witness.witness_verified = True
     witness.verified_at = datetime.now(timezone.utc)
@@ -135,7 +149,9 @@ def verify_witness(token: str, db: Session = Depends(get_db)):
     db.commit()
 
     return {
-        "message": "Witness verified successfully"
+        "message": "Witness verified successfully",
+        "consent_status": consent.status,
+        "donor_status": consent.donor.status
     }
 
     
