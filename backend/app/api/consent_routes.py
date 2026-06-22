@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import User, Donor, Consent, Consent_Witness
+from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, DonorStatus
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
 
@@ -124,6 +124,13 @@ def verify_witness(token: str, db: Session = Depends(get_db)):
     
     witness.witness_verified = True
     witness.verified_at = datetime.now(timezone.utc)
+
+    consent = witness.consent
+    all_verified = all(w.witness_verified for w in consent.witnesses)
+
+    if all_verified:
+        consent.status = ConsentStatus.active.value
+        consent.donor.status = DonorStatus.registered.value
 
     db.commit()
 
