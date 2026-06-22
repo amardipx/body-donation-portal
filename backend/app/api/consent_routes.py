@@ -1,3 +1,6 @@
+import secrets
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -78,12 +81,16 @@ def submit_consent(
     db.flush()
 
     for witness_data in consent_data.witnesses:
+        verification_token = secrets.token_urlsafe(32)
         witness = Consent_Witness(
             consent_id=consent.id,
             full_name=witness_data.full_name,
             relation=witness_data.relation.value,
             email=witness_data.email,
             phone=witness_data.phone,
+
+            verification_token=verification_token,
+            verification_sent_at=datetime.now(timezone.utc)
         )
     
         db.add(witness)
@@ -101,3 +108,27 @@ def submit_consent(
         "consent_status": consent.status
     }
 
+@router.post("/verify/{token}")
+def verify_witness(token: str, db: Session = Depends(get_db)):
+    witness = (
+        db.query(Consent_Witness)
+        .filter(Consent_Witness.verification_token == token)
+        .first()
+    )
+
+    if witness is None:
+        raise HTTPException(status_code=404, detail="Invalid verification token")
+    
+    if witness.witness_verified:
+        raise HTTPException(status_code=400, detail="Witness already verified")
+    
+    witness.witness_verified = True
+    witness.verified_at = datetime.now(timezone.utc)
+
+    db.commit()
+
+    return {
+        "message": "Witness verified successfully"
+    }
+
+    
