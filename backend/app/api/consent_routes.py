@@ -8,6 +8,7 @@ from app.db.database import get_db
 from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, DonorStatus
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
+from app.services.notification_service import (send_witness_verification)
 
 router = APIRouter(
     prefix="/consent",
@@ -42,11 +43,11 @@ def submit_consent(
         )
 
     emails = [w.email for w in consent_data.witnesses]
-    if len(set(emails)) != 2:
-        raise HTTPException(
-            status_code=400,
-            detail="Witness email addresses must be unique"
-        )
+    # if len(set(emails)) != 2:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Witness email addresses must be unique"
+    #     )
 
     phones = [w.phone for w in consent_data.witnesses]
     if len(set(phones)) != 2:
@@ -108,6 +109,15 @@ def submit_consent(
         )
     
         db.add(witness)
+        verification_link = (
+            f"http://localhost:8000/consent/verify/{verification_token}"
+        )
+        
+        send_witness_verification(
+            witness.email,
+            witness.full_name,
+            verification_link
+        )
 
     db.commit()
 
@@ -122,7 +132,7 @@ def submit_consent(
         "consent_status": consent.status
     }
 
-@router.post("/verify/{token}")
+@router.get("/verify/{token}")
 def verify_witness(token: str, db: Session = Depends(get_db)):
     witness = (
         db.query(Consent_Witness)
