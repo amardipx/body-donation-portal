@@ -8,7 +8,7 @@ from app.db.database import get_db
 from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, DonorStatus
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
-from app.services.notification_service import (send_witness_verification)
+from app.services.notification_service import (send_witness_verification, send_donor_confirmation)
 
 router = APIRouter(
     prefix="/consent",
@@ -156,6 +156,14 @@ def verify_witness(token: str, db: Session = Depends(get_db)):
         consent.status = ConsentStatus.active.value
         consent.donor.status = DonorStatus.registered.value
 
+        donor = consent.donor
+        user = donor.user
+
+        send_donor_confirmation(
+            user.email,
+            user.full_name
+        )
+        
     db.commit()
 
     return {

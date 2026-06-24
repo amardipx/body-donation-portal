@@ -41,4 +41,18 @@ Body Donation Portal.
 """
     
     send_email(witness_email, subject, body)
+
+def send_donor_confirmation(donor_email: str, donor_name: str):
+    subject = "Body Donation Registration Completed"
+
+    body = f"""
+Hello {donor_name}, 
+Your body donation consent has been successfully verified.
+Both listed witnesses have confirmed their consent.
+Your registration is now active.
+
+Thank you,
+Body Donation Portal
+"""
+    send_email(donor_email, subject, body)
         
