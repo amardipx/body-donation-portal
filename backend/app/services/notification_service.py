@@ -1,4 +1,5 @@
 import os
+from fastapi import BackgroundTasks
 from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
@@ -14,7 +15,6 @@ if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     raise RuntimeError("Email configurations not configured")
 
 def send_email(reciever_email: str, subject: str, body: str):
-
     message = EmailMessage()
 
     message["Subject"] = subject
@@ -28,7 +28,7 @@ def send_email(reciever_email: str, subject: str, body: str):
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.send_message(message)
 
-def send_witness_verification(witness_email: str, witness_name: str, verification_link: str):
+def send_witness_verification(background_tasks: BackgroundTasks, witness_email: str, witness_name: str, verification_link: str):
     subject = "Witness Verification Required"
     body = f"""
 Hello {witness_name},
@@ -40,9 +40,9 @@ Thank you.
 Body Donation Portal.
 """
     
-    send_email(witness_email, subject, body)
+    background_tasks.add_task(send_email, witness_email, subject, body)
 
-def send_donor_confirmation(donor_email: str, donor_name: str):
+def send_donor_confirmation(background_tasks: BackgroundTasks, donor_email: str, donor_name: str):
     subject = "Body Donation Registration Completed"
 
     body = f"""
@@ -54,5 +54,5 @@ Your registration is now active.
 Thank you,
 Body Donation Portal
 """
-    send_email(donor_email, subject, body)
+    background_tasks.add_task(send_email, donor_email, subject, body)
         

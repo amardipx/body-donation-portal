@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -22,6 +22,7 @@ router = APIRouter(
 @router.post("/")
 def submit_consent(
     consent_data: ConsentFormCreate,
+    background_task: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -47,11 +48,11 @@ def submit_consent(
         )
 
     emails = [w.email for w in consent_data.witnesses]
-    # if len(set(emails)) != 2:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="Witness email addresses must be unique"
-    #     )
+    if len(set(emails)) != 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Witness email addresses must be unique"
+        )
 
     phones = [w.phone for w in consent_data.witnesses]
     if len(set(phones)) != 2:
@@ -98,7 +99,9 @@ def submit_consent(
 
     db.add(consent)
     db.flush()
-
+    
+    witnesses_to_notify = []
+    
     for witness_data in consent_data.witnesses:
         verification_token = secrets.token_urlsafe(32)
         witness = Consent_Witness(
@@ -117,14 +120,21 @@ def submit_consent(
             f"http://localhost:8000/consent/verify/{verification_token}"
         )
         
-        send_witness_verification(
-            witness.email,
-            witness.full_name,
-            verification_link
+        witnesses_to_notify.append(
+            (
+                witness.email,
+                witness.full_name,
+                verification_link
+                )
         )
 
     db.commit()
-
+    print("Commit successful")
+    
+    for email, name, link in witnesses_to_notify:
+        print(f"Queueing email for {email}")
+        send_witness_verification(background_task, email, name, link)
+        
     db.refresh(donor)
     db.refresh(consent)
 
@@ -137,7 +147,7 @@ def submit_consent(
     }
 
 @router.get("/verify/{token}")
-def verify_witness(request: Request, token: str, db: Session = Depends(get_db)):
+def verify_witness(request: Request, background_task: BackgroundTasks, token: str, db: Session = Depends(get_db)):
     witness = (
         db.query(Consent_Witness)
         .filter(Consent_Witness.verification_token == token)
@@ -155,6 +165,8 @@ def verify_witness(request: Request, token: str, db: Session = Depends(get_db)):
 
     consent = witness.consent
     all_verified = all(w.witness_verified for w in consent.witnesses)
+    
+    donor_email, donor_name = None, None
 
     if all_verified:
         consent.status = ConsentStatus.active.value
@@ -163,16 +175,17 @@ def verify_witness(request: Request, token: str, db: Session = Depends(get_db)):
         donor = consent.donor
         user = donor.user
 
-        send_donor_confirmation(
-            user.email,
-            user.full_name
-        )
+        donor_email = user.email
+        donor_name = user.full_name
         
     db.commit()
-
+    
+    if donor_email:
+        send_donor_confirmation(background_task, donor_email, donor_name)
     return templates.TemplateResponse(
-        "witness_verified.html",
-        {"request": request}
+        request = request,
+        name= "witness_verified.html",
+        context= {}
     )
 
     
