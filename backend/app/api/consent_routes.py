@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -9,6 +9,10 @@ from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, 
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
 from app.services.notification_service import (send_witness_verification, send_donor_confirmation)
+
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="app/templates")
 
 router = APIRouter(
     prefix="/consent",
@@ -133,7 +137,7 @@ def submit_consent(
     }
 
 @router.get("/verify/{token}")
-def verify_witness(token: str, db: Session = Depends(get_db)):
+def verify_witness(request: Request, token: str, db: Session = Depends(get_db)):
     witness = (
         db.query(Consent_Witness)
         .filter(Consent_Witness.verification_token == token)
@@ -166,10 +170,9 @@ def verify_witness(token: str, db: Session = Depends(get_db)):
         
     db.commit()
 
-    return {
-        "message": "Witness verified successfully",
-        "consent_status": consent.status,
-        "donor_status": consent.donor.status
-    }
+    return templates.TemplateResponse(
+        "witness_verified.html",
+        {"request": request}
+    )
 
     
