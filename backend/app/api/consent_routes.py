@@ -133,7 +133,7 @@ def submit_consent(
     
     for email, name, link in witnesses_to_notify:
         print(f"Queueing email for {email}")
-        send_witness_verification(background_task, email, name, link)
+        background_task.add_task(send_witness_verification, email, name, link)
         
     db.refresh(donor)
     db.refresh(consent)
@@ -181,7 +181,8 @@ def verify_witness(request: Request, background_task: BackgroundTasks, token: st
     db.commit()
     
     if donor_email:
-        send_donor_confirmation(background_task, donor_email, donor_name)
+        background_task.add_task(send_donor_confirmation, donor_email, donor_name)
+        
     return templates.TemplateResponse(
         request = request,
         name= "witness_verified.html",

@@ -1,5 +1,4 @@
 import os
-from fastapi import BackgroundTasks
 from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
 import smtplib
@@ -33,21 +32,21 @@ def send_email(reciever_email: str, subject: str, body: str):
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.send_message(message)
 
-def send_witness_verification(background_tasks: BackgroundTasks, witness_email: str, witness_name: str, verification_link: str):
+def send_witness_verification(witness_email: str, witness_name: str, verification_link: str):
     subject = "Witness Verification Required"
     
     template = env.get_template("witness_verification.html")
     
     body = template.render(witness_name = witness_name, verification_link = verification_link )
     
-    background_tasks.add_task(send_email, witness_email, subject, body)
+    send_email(witness_email, subject, body)
 
-def send_donor_confirmation(background_tasks: BackgroundTasks, donor_email: str, donor_name: str):
+def send_donor_confirmation(donor_email: str, donor_name: str):
     subject = "Body Donation Registration Completed"
     
     template = env.get_template("donor_confirmation.html")
     
     body = template.render(donor_name = donor_name)
     
-    background_tasks.add_task(send_email, donor_email, subject, body)
+    send_email(donor_email, subject, body)
         
