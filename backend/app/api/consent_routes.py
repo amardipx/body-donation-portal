@@ -12,7 +12,7 @@ from app.services.notification_service import (send_witness_verification, send_d
 
 from fastapi.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="app/templates/pages")
 
 router = APIRouter(
     prefix="/consent",
