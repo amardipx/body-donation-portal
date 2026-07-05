@@ -5,10 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, DonorStatus
+from app.db.models import User, Donor, Consent, Consent_Witness, ConsentStatus, DonorStatus, Certificate, CertificateType
 from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
 from app.services.notification_service import (send_witness_verification, send_donor_confirmation)
+from app.services.certificate_service import generate_consent_certificate
 
 from fastapi.templating import Jinja2Templates
 
@@ -129,10 +130,8 @@ def submit_consent(
         )
 
     db.commit()
-    print("Commit successful")
     
     for email, name, link in witnesses_to_notify:
-        print(f"Queueing email for {email}")
         background_task.add_task(send_witness_verification, email, name, link)
         
     db.refresh(donor)
@@ -174,14 +173,27 @@ def verify_witness(request: Request, background_task: BackgroundTasks, token: st
 
         donor = consent.donor
         user = donor.user
-
+        
+        certificate_number, storage_path = generate_consent_certificate(donor_name=user.full_name)
+        
+        certificate = Certificate(
+            donor_id = donor.id,
+            certificate_number = certificate_number,
+            type = CertificateType.consent_certificate.value,
+            certificate_file_path = storage_path,
+            is_valid = True,
+        )
+        
+        db.add(certificate)
+        
+        
         donor_email = user.email
         donor_name = user.full_name
         
     db.commit()
     
     if donor_email:
-        background_task.add_task(send_donor_confirmation, donor_email, donor_name)
+        background_task.add_task(send_donor_confirmation, donor_email, donor_name, storage_path)
         
     return templates.TemplateResponse(
         request = request,

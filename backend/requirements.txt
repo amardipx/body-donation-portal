@@ -56,6 +56,7 @@ groq==0.37.1
 pymupdf==1.26.4
 pytesseract==0.3.13
 Pillow==11.3.0
+weasyprint==69.0
 
 
 # Supabase

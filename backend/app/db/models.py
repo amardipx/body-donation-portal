@@ -190,6 +190,7 @@ class Certificate(Base):
     
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
+    certificate_number = Column(String, unique=True, nullable=False)
     type = Column(String(50), nullable=False)
     issued_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     certificate_file_path = Column(String, nullable=False, unique=True)

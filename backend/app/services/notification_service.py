@@ -3,11 +3,22 @@ from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
+from supabase import create_client, Client
 
 load_dotenv()
 
 env = Environment(
     loader=FileSystemLoader("app/templates/emails")
+)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET")
+
+
+supabase: Client = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY,
 )
 
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
@@ -41,12 +52,16 @@ def send_witness_verification(witness_email: str, witness_name: str, verificatio
     
     send_email(witness_email, subject, body)
 
-def send_donor_confirmation(donor_email: str, donor_name: str):
+def send_donor_confirmation(donor_email: str, donor_name: str, storage_path: str):
+    
+    signed_url = supabase.storage.from_(SUPABASE_BUCKET).create_signed_url(storage_path,86400)
+    
+    certificate_link = (signed_url.get("signedURL") or signed_url.get("signedUrl"))
+
     subject = "Body Donation Registration Completed"
     
     template = env.get_template("donor_confirmation.html")
     
-    body = template.render(donor_name = donor_name)
+    body = template.render(donor_name = donor_name, certificate_link = certificate_link )
     
     send_email(donor_email, subject, body)
-        
