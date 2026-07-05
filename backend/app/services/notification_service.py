@@ -1,10 +1,15 @@
 import os
 from fastapi import BackgroundTasks
+from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
 
 load_dotenv()
+
+env = Environment(
+    loader=FileSystemLoader("app/templates/emails")
+)
 
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
@@ -21,7 +26,7 @@ def send_email(reciever_email: str, subject: str, body: str):
     message["From"] = EMAIL_ADDRESS
     message["To"] = reciever_email
 
-    message.set_content(body)
+    message.add_alternative(body, subtype = "html")
 
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.starttls()
@@ -30,29 +35,19 @@ def send_email(reciever_email: str, subject: str, body: str):
 
 def send_witness_verification(background_tasks: BackgroundTasks, witness_email: str, witness_name: str, verification_link: str):
     subject = "Witness Verification Required"
-    body = f"""
-Hello {witness_name},
-You have been listed as a witness for a body donation consent.
-Please verify your consent by visiting the link below:
-{verification_link}
-
-Thank you.
-Body Donation Portal.
-"""
+    
+    template = env.get_template("witness_verification.html")
+    
+    body = template.render(witness_name = witness_name, verification_link = verification_link )
     
     background_tasks.add_task(send_email, witness_email, subject, body)
 
 def send_donor_confirmation(background_tasks: BackgroundTasks, donor_email: str, donor_name: str):
     subject = "Body Donation Registration Completed"
-
-    body = f"""
-Hello {donor_name}, 
-Your body donation consent has been successfully verified.
-Both listed witnesses have confirmed their consent.
-Your registration is now active.
-
-Thank you,
-Body Donation Portal
-"""
+    
+    template = env.get_template("donor_confirmation.html")
+    
+    body = template.render(donor_name = donor_name)
+    
     background_tasks.add_task(send_email, donor_email, subject, body)
         
