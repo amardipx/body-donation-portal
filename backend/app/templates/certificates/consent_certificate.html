@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Certificate of Consent</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+@page {
+    size: 1000px 660px;
+    margin: 0;
+}
+
+html, body{
+    width:1000px;
+    height:660px;
+    margin:0;
+    padding:0;
+    background:#ffffff;
+    font-family:'EB Garamond', serif;
+}
+
+.certificate{
+
+    position:relative;
+
+    width:1000px;
+    height:660px;
+
+    background:#fbf8f1;
+
+    border:12px solid #a9812e;
+    padding:16px;
+}
+
+.certificate::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:16px;
+
+    border:1px solid #a9812e;
+}
+
+.frame{
+
+    position:absolute;
+
+    inset:28px;
+
+    border:1px solid #16233f;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    padding:40px 70px;
+}
+
+
+.title{
+
+    font-family:'Tangerine', cursive;
+
+    font-size:72px;
+
+    color:#16233f;
+
+    margin-bottom:10px;
+}
+
+.line{
+
+    width:180px;
+
+    height:1px;
+
+    background:#c9bfa4;
+
+    margin-bottom:25px;
+}
+
+.lead{
+
+    text-transform:uppercase;
+
+    letter-spacing:4px;
+
+    color:#a9812e;
+
+    font-family:'Cormorant Garamond', serif;
+
+    margin-bottom:15px;
+}
+
+.name{
+
+    font-family:'Tangerine', cursive;
+
+    font-size:60px;
+
+    color:#16233f;
+
+    border-bottom:1px solid #c9bfa4;
+
+    padding:0 40px 8px;
+
+    margin-bottom:30px;
+}
+
+.body{
+
+    text-align:center;
+
+    max-width:650px;
+
+    font-size:20px;
+
+    line-height:1.8;
+
+    color:#26304a;
+
+    margin-bottom:40px;
+}
+
+.footer{
+
+    margin-top:auto;
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:space-between;
+}
+
+.field{
+
+    text-align:center;
+}
+
+.value{
+
+    border-bottom:1px solid #26304a;
+
+    padding-bottom:5px;
+
+    margin-bottom:5px;
+
+    min-width:220px;
+
+    font-size:18px;
+}
+
+.label{
+
+    text-transform:uppercase;
+
+    font-size:11px;
+
+    letter-spacing:2px;
+
+    color:#a9812e;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="certificate">
+
+    <div class="frame">
+
+        <h1 class="title">
+            Certificate of Consent
+        </h1>
+
+        <div class="line"></div>
+
+        <p class="lead">
+            This is to certify that
+        </p>
+
+        <div class="name">
+            {{ donor_name }}
+        </div>
+
+        <div class="body">
+
+            has voluntarily pledged to donate their body for
+            medical education and scientific research.
+
+            <br><br>
+
+            This certificate acknowledges the donor's informed
+            consent and generous contribution towards advancing
+            healthcare and medical learning.
+
+        </div>
+
+        <div class="footer">
+
+            <div class="field">
+
+                <div class="value">
+                    {{ certificate_number }}
+                </div>
+
+                <div class="label">
+                    Certificate No.
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <div class="value">
+                    {{ issued_date }}
+                </div>
+
+                <div class="label">
+                    Issue Date
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
