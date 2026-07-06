@@ -208,10 +208,9 @@ class Family_Member(Base):
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     user_id = Column( UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
-    full_name = Column(String(50), nullable=False)
     relation = Column(String(100), nullable=False)
-    email = Column(String(255), nullable=False)
-    phone = Column(String(20), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    
     
     user = relationship("User", back_populates="family_members")
     donor = relationship("Donor", back_populates="family_members")

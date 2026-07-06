@@ -34,5 +34,5 @@ class ConsentFormCreate(BaseModel):
     identity_number: str
     declaration_accepted: bool
 
-    preferred_institution: UUID | None = None
+    preferred_institution: None = None | UUID 
     witnesses: list[WitnessCreate]
