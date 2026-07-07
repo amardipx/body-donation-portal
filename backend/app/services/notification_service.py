@@ -65,3 +65,29 @@ def send_donor_confirmation(donor_email: str, donor_name: str, storage_path: str
     body = template.render(donor_name = donor_name, certificate_link = certificate_link )
     
     send_email(donor_email, subject, body)
+
+def send_family_assigned_staff(
+    family_member_email: str, 
+    family_member_name: str,
+    donor_name: str, 
+    institution_name: str,
+    institution_phone: str,
+    staff_name: str,
+    staff_phone: str,
+    staff_email: str,
+):
+    subject = "Body Donation - Death Report Received"
+    
+    template = env.get_template("family_death_report.html")
+    
+    body = template.render(
+        family_member_name = family_member_name, 
+        donor_name = donor_name,
+        institution_name = institution_name, 
+        institution_phone = institution_phone, 
+        staff_name = staff_name,
+        staff_phone = staff_phone,
+        staff_email =staff_email,
+    )
+    
+    send_email(family_member_email, subject, body)
