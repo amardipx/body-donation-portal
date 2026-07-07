@@ -38,19 +38,28 @@ def link_donor(
             detail="Invalid certificate number."
         )
     
-    existing = (
+    existing_family = (
         db.query(Family_Member)
-        .filter(
-            Family_Member.user_id == current_user.id,
-            Family_Member.donor_id == certificate.donor_id
-        )
+        .filter(Family_Member.user_id == current_user.id)
         .first()
     )
     
-    if existing:
+    if existing_family:
         raise HTTPException(
             status_code=409,
-            detail="You are already linked to this donor."
+            detail="You are already linked to a donor."
+        )
+    
+    existing_donor = (
+        db.query(Family_Member)
+        .filter(Family_Member.donor_id == certificate.donor_id)
+        .first()
+    )
+    
+    if existing_donor:
+        raise HTTPException(
+            status_code=409,
+            detail="This donor is already linked to a family member."
         )
     
     family_member = Family_Member(
