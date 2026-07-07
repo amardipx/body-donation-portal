@@ -121,6 +121,7 @@ class Donor(Base):
     consent = relationship("Consent", back_populates="donor", uselist=False, cascade="all, delete-orphan")
     family_members = relationship("Family_Member", back_populates="donor")
     certificates = relationship("Certificate", back_populates="donor", cascade="all, delete-orphan")
+    death_reports = relationship("Death_Report",back_populates="donor",cascade="all, delete-orphan")
 
 
 #Consent Model
@@ -206,15 +207,41 @@ class Family_Member(Base):
     __tablename__ = "family_members"
 
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    user_id = Column( UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    user_id = Column( UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
-    full_name = Column(String(50), nullable=False)
     relation = Column(String(100), nullable=False)
-    email = Column(String(255), nullable=False)
-    phone = Column(String(20), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    
     
     user = relationship("User", back_populates="family_members")
     donor = relationship("Donor", back_populates="family_members")
+    death_reports = relationship("Death_Report", back_populates="family_member")
+
+
+#Death Report Model
+
+class DeathReportStatus(str, enum.Enum):
+    assigned = "assigned"
+    in_progress = "in_progress"
+    completed = "completed"
+
+
+class Death_Report(Base):
+    
+    __tablename__ = "death_reports"
+    
+    id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
+    reported_by_family_id = Column(UUID(as_uuid=True), ForeignKey("family_members.id", ondelete="SET NULL"), nullable=True)
+    assigned_staff_id = Column(UUID(as_uuid=True), ForeignKey("institution_staff.id", ondelete="SET NULL"), nullable=True)
+    status = Column(String(20), nullable=False, default=DeathReportStatus.assigned.value)
+    reported_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    completed_at = Column(DateTime(timezone=True))
+    
+    
+    donor = relationship("Donor", back_populates="death_reports")
+    family_member = relationship("Family_Member", back_populates="death_reports")
+    institution_staff = relationship("Institution_Staff", back_populates="death_reports")
 
 
 #Institution Model
@@ -270,4 +297,5 @@ class Institution_Staff(Base):
     
     user = relationship("User", back_populates="institution_staff")
     institution = relationship("Institution", back_populates="institution_staff")
+    death_reports = relationship("Death_Report", back_populates="institution_staff")
     

@@ -6,3 +6,4 @@ frontend/node_modules/
 __pycache__/
 *.pyc
 .vscode
+backend/app/populate_db
