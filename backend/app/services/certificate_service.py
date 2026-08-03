@@ -2,8 +2,8 @@ import os
 from io import BytesIO
 from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
-from datetime import datetime
 from weasyprint import HTML
+from datetime import datetime
 from supabase import create_client, Client
 import secrets
 
@@ -60,7 +60,7 @@ def _upload_certificate(pdf_bytes: bytes, certificate_number: str):
 
 
 
-def generate_consent_certificate(donor_name: str):
+def generate_consent_certificate(donor_name: str): 
     
     certificate_number = _generate_certificate_number()
     issued_date = datetime.now().strftime("%d %B %Y")
