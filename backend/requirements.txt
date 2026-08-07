@@ -79,6 +79,7 @@ six==1.17.0
 
 
 # Utility Libraries
+requests==2.32.5
 click==8.3.3
 colorama==0.4.6
 MarkupSafe==3.0.3
