@@ -4,6 +4,7 @@ from app.api.rag_routes import router as rag_router
 from app.api.auth_routes import router as auth_router
 from app.api.consent_routes import router as consent_router
 from app.api.family_routes import router as family_router
+from app.api.admin_routes import router as admin_router
 
 
 app = FastAPI()
@@ -13,6 +14,7 @@ app = FastAPI()
 app.include_router(auth_router)
 app.include_router(consent_router)
 app.include_router(family_router)
+app.include_router(admin_router)
 app.include_router(document_router)
 app.include_router(rag_router)
 

@@ -128,3 +128,22 @@ def send_family_assigned_staff(
     )
     
     send_email(family_member_email, subject, body)
+
+def send_institution_created_email(
+    staff_email: str,
+    staff_name: str,
+    institution_name: str,
+    staff_password: str,
+):
+    subject = "Welcome to Body Donation Portal"
+    
+    template = env.get_template("institution_created.html")
+    
+    body = template.render(
+        staff_name = staff_name, 
+        institution_name = institution_name,
+        staff_email = staff_email,
+        staff_password = staff_password
+    )
+    
+    send_email(staff_email, subject, body)
