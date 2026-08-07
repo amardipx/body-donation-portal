@@ -1,6 +1,7 @@
 import os
 from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
+import requests
 import smtplib
 from email.message import EmailMessage
 from supabase import create_client, Client
@@ -29,19 +30,55 @@ SMTP_PORT = int(os.getenv("SMTP_PORT"))
 if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     raise RuntimeError("Email configurations not configured")
 
-def send_email(reciever_email: str, subject: str, body: str):
-    message = EmailMessage()
 
-    message["Subject"] = subject
-    message["From"] = EMAIL_ADDRESS
-    message["To"] = reciever_email
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
-    message.add_alternative(body, subtype = "html")
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls()
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        server.send_message(message)
+def send_email(recipient, subject, html_body):
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "sender": {
+            "name": "Body Donation Portal",
+            "email": EMAIL_ADDRESS
+        },
+        "to": [
+            {"email": recipient}
+        ],
+        "subject": subject,
+        "htmlContent": html_body
+    }
+
+    response = requests.post(
+        url,
+        json=payload,
+        headers=headers,
+        timeout=30
+    )
+
+    response.raise_for_status()
+
+
+# def send_email(reciever_email: str, subject: str, body: str):
+#     message = EmailMessage()
+
+#     message["Subject"] = subject
+#     message["From"] = EMAIL_ADDRESS
+#     message["To"] = reciever_email
+
+#     message.add_alternative(body, subtype = "html")
+
+#     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+#         server.starttls()
+#         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+#         server.send_message(message)
+
 
 def send_witness_verification(witness_email: str, witness_name: str, verification_link: str):
     subject = "Witness Verification Required"

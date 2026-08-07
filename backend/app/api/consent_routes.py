@@ -49,11 +49,11 @@ def submit_consent(
         )
 
     emails = [w.email for w in consent_data.witnesses]
-    # if len(set(emails)) != 2:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="Witness email addresses must be unique"
-    #     )
+    if len(set(emails)) != 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Witness email addresses must be unique"
+        )
 
     phones = [w.phone for w in consent_data.witnesses]
     if len(set(phones)) != 2:
@@ -118,7 +118,7 @@ def submit_consent(
     
         db.add(witness)
         verification_link = (
-            f"http://localhost:8000/consent/verify/{verification_token}"
+            f"https://body-donation-portal.onrender.com/consent/verify/{verification_token}"
         )
         
         witnesses_to_notify.append(
