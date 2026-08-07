@@ -29,10 +29,11 @@ class RagFile(Base):
 #User Model
 
 class UserRole(str, enum.Enum):
-    admin = "admin"
     donor = "donor"
-    institution_staff = "institution_staff"
     family_member = "family_member"
+    institution_staff = "institution_staff"
+    admin = "admin"
+    
 
 
 class User(Base):
@@ -247,8 +248,8 @@ class Death_Report(Base):
 #Institution Model
 
 class InstitutionType(str, enum.Enum):
-    hospital = "hospital"
     medical_college = "medical_college"
+    hospital = "hospital"
     research_center = "research_center"
     
 
@@ -276,10 +277,12 @@ class Institution(Base):
 #Staff Model
 
 class StaffRole(str, enum.Enum):
+    admin_head = "admin_head"
+    admin_staff = "admin_staff"
     hod = "hod"
     doctor = "doctor"
     lab_technician = "lab_technician"
-    admin_staff = "admin_staff"
+    
 
 class Institution_Staff(Base):
     
