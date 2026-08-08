@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.schemas.user_schema import (UserSignup, UserLogin)
 from app.db.database import get_db
-from app.db.models import User
+from app.db.models import User, UserRole
 from app.utils.security import (hash_password, verify_password, create_access_token, decode_access_token)
 
 from fastapi import HTTPException
@@ -57,6 +57,22 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     
     if not verify_password(form_data.password, existing_user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
+    
+    if not existing_user.is_active:
+
+        if existing_user.role in [
+            UserRole.admin.value,
+            UserRole.institution_staff.value
+        ]:
+            raise HTTPException(
+                status_code=403,
+                detail="Your staff account is currently deactivated. Please contact your admin."
+            )
+
+        raise HTTPException(
+            status_code=403,
+            detail="Your account is currently deactivated."
+        )
     
     access_token = create_access_token({"sub": str(existing_user.id), "role": existing_user.role})
 

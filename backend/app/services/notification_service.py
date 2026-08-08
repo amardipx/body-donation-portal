@@ -129,6 +129,30 @@ def send_family_assigned_staff(
     
     send_email(family_member_email, subject, body)
 
+def send_assigned_staff_family(
+    staff_email: str,
+    staff_name: str,
+    donor_name: str, 
+    institution_name: str,
+    family_member_name: str,
+    family_member_email: str, 
+    family_member_phone: str,
+):
+    subject = "Body Donation - Death Report Allocated"
+    
+    template = env.get_template("staff_report_allocation.html")
+    
+    body = template.render(
+        staff_name = staff_name,
+        donor_name = donor_name,
+        institution_name = institution_name, 
+        family_member_name = family_member_name, 
+        family_member_email = family_member_email,
+        family_member_phone = family_member_phone,
+    )
+    
+    send_email(staff_email, subject, body)
+
 def send_institution_created_email(
     staff_email: str,
     staff_name: str,
@@ -138,6 +162,25 @@ def send_institution_created_email(
     subject = "Welcome to Body Donation Portal"
     
     template = env.get_template("institution_created.html")
+    
+    body = template.render(
+        staff_name = staff_name, 
+        institution_name = institution_name,
+        staff_email = staff_email,
+        staff_password = staff_password
+    )
+    
+    send_email(staff_email, subject, body)
+
+def send_staff_credentials(
+    staff_email: str,
+    staff_name: str,
+    institution_name: str,
+    staff_password: str,
+):
+    subject = "Welcome to Body Donation Portal"
+    
+    template = env.get_template("staff_account_creation.html")
     
     body = template.render(
         staff_name = staff_name, 

@@ -47,15 +47,27 @@ def add_institution(
             detail ="Institution with this registration number already exists."
         )
     
-    existing_user = (
+    existing_email = (
         db.query(User)
         .filter(User.email == admin_data.email)
         .first()
     )
-    if existing_user:
+    if existing_email:
         raise HTTPException(
             status_code = 400,
             detail = "User with this email already exists."
+        )
+    
+    existing_phone = (
+        db.query(User)
+        .filter(User.phone == admin_data.phone)
+        .first()
+    )
+
+    if existing_phone:
+        raise HTTPException(
+            status_code=400,
+            detail="User with this phone number already exists."
         )
     
     password = generate_random_password(admin_data.full_name)
