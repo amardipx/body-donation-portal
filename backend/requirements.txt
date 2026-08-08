@@ -65,6 +65,8 @@ supabase==2.15.3
 
 # File Upload Handling
 python-multipart==0.0.20
+pandas==2.3.3
+openpyxl==3.1.5
 
 
 # Numerical Processing

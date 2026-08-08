@@ -7,7 +7,7 @@ from app.db.database import get_db
 from app.db.models import User, Certificate, Family_Member, Institution, Institution_Staff, Death_Report, DonorStatus, DeathReportStatus, StaffRole, UserRole
 from app.schemas.family_member_schema import LinkDonorRequest
 from app.api.auth_routes import get_current_user
-from app.services.notification_service import send_family_assigned_staff
+from app.services.notification_service import send_family_assigned_staff, send_assigned_staff_family
 
 router = APIRouter(
     prefix="/family",
@@ -164,6 +164,17 @@ def report_death(
         staff_name=assigned_staff.full_name,
         staff_phone=assigned_staff.phone,
         staff_email=assigned_staff.email,
+    )
+    
+    background_tasks.add_task(
+        send_assigned_staff_family,
+        staff_email=assigned_staff.email,
+        staff_name=assigned_staff.full_name,
+        donor_name=donor.user.full_name,
+        institution_name=institution.name,
+        family_member_name=current_user.full_name,
+        family_member_email=current_user.email,
+        family_member_phone=current_user.phone,
     )
     
     return {
