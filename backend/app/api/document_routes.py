@@ -1,7 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.db.models import RagFile, DocumentType
+from app.db.models import User, RagFile, DocumentType
+
+from app.api.auth_routes import get_current_user
 from app.rag.rag_storage import upload_document, delete_document, download_document
 from app.rag.ingest import index_document, delete_document_vectors
 
@@ -14,7 +16,14 @@ router = APIRouter(
 
 # Get All Documents
 @router.get("/")
-def get_documents(db: Session = Depends(get_db)):
+def get_documents(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
+    
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can access this endpoint.")
+    
     try:
         documents = db.query(RagFile).all()
         return [
@@ -37,7 +46,12 @@ async def upload_document_route(
     file: UploadFile = File(...),
     document_type: DocumentType = Form(...),
     db: Session = Depends(get_db),
-):
+    current_user: User = Depends(get_current_user)
+    ):
+        
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can access this endpoint.")
+    
     try:
         rag_file = await upload_document(
             file=file,
@@ -71,7 +85,12 @@ async def upload_document_route(
 def delete_document_route(
     doc_id: str,
     db: Session = Depends(get_db),
-):
+    current_user: User = Depends(get_current_user)
+    ):
+    
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can access this endpoint.")
+    
     try:
         delete_document_vectors(doc_id)
 
@@ -96,7 +115,12 @@ async def update_document_route(
     file: UploadFile = File(...),
     document_type: str = Form(...),
     db: Session = Depends(get_db),
-):
+    current_user: User = Depends(get_current_user)
+    ):
+    
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can access this endpoint.")
+    
     try:
         delete_document_vectors(doc_id)
         delete_document(doc_id=doc_id, db=db)
