@@ -50,8 +50,8 @@ def get_donor_status(db: Session, donor_id):
         response["donor"]["cadaver"] = {
             "status": cadaver.status,
             "assigned_admin": (
-                cadaver.assigned_admin_id.full_name
-                if cadaver.assigned_admin_id
+                cadaver.assigned_admin.full_name
+                if cadaver.assigned_admin
                 else None
             )
         }
