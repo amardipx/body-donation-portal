@@ -153,6 +153,50 @@ def send_assigned_staff_family(
     
     send_email(staff_email, subject, body)
 
+def send_death_report_completed(
+    family_email: str,
+    family_name: str,
+    donor_name: str,
+    admin_name: str,
+    admin_email: str,
+):
+    subject = "Death Report Completed - Body Donation Portal"
+
+    template = env.get_template(
+        "death_report_completed.html"
+    )
+
+    body = template.render(
+        family_name=family_name,
+        donor_name=donor_name,
+        admin_name=admin_name,
+        admin_email=admin_email,
+    )
+
+    send_email(family_email, subject, body)
+
+def send_cadaver_use_completed(
+    family_email: str,
+    family_name: str,
+    donor_name: str,
+    admin_name: str,
+    admin_email: str,
+):
+    subject = "Donation Process Completed - Body Donation Portal"
+
+    template = env.get_template(
+        "cadaver_use_completed.html"
+    )
+
+    body = template.render(
+        family_name=family_name,
+        donor_name=donor_name,
+        admin_name=admin_name,
+        admin_email=admin_email,
+    )
+
+    send_email(family_email, subject, body)
+
 def send_institution_created_email(
     staff_email: str,
     staff_name: str,
