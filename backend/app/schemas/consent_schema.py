@@ -13,7 +13,7 @@ class WitnessCreate(BaseModel):
 
 class ConsentFormCreate(BaseModel):
     first_name: str
-    middle_name: str | None = None
+    middle_name: None = None | str
     last_name: str
     parent_name: str
 
@@ -22,7 +22,7 @@ class ConsentFormCreate(BaseModel):
     blood_type: DonorBloodType
 
     address_line_1: str
-    address_line_2: str | None = None
+    address_line_2: None = None | str
 
     city: str
     district: str

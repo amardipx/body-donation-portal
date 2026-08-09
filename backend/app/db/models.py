@@ -123,6 +123,7 @@ class Donor(Base):
     family_members = relationship("Family_Member", back_populates="donor")
     certificates = relationship("Certificate", back_populates="donor", cascade="all, delete-orphan")
     death_reports = relationship("Death_Report",back_populates="donor",cascade="all, delete-orphan")
+    cadavers = relationship("Cadaver", back_populates="donor", uselist=False, cascade="all, delete-orphan")
 
 
 #Consent Model
@@ -217,6 +218,7 @@ class Family_Member(Base):
     user = relationship("User", back_populates="family_members")
     donor = relationship("Donor", back_populates="family_members")
     death_reports = relationship("Death_Report", back_populates="family_member")
+    cadaver = relationship("Cadaver", back_populates="family_member")
 
 
 #Death Report Model
@@ -234,7 +236,7 @@ class Death_Report(Base):
     id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False)
     reported_by_family_id = Column(UUID(as_uuid=True), ForeignKey("family_members.id", ondelete="SET NULL"), nullable=True)
-    assigned_staff_id = Column(UUID(as_uuid=True), ForeignKey("institution_staff.id", ondelete="SET NULL"), nullable=True)
+    assigned_admin_id = Column(UUID(as_uuid=True), ForeignKey("institution_staff.id", ondelete="SET NULL"), nullable=True)
     status = Column(String(20), nullable=False, default=DeathReportStatus.assigned.value)
     reported_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
@@ -242,7 +244,31 @@ class Death_Report(Base):
     
     donor = relationship("Donor", back_populates="death_reports")
     family_member = relationship("Family_Member", back_populates="death_reports")
-    institution_staff = relationship("Institution_Staff", back_populates="death_reports")
+    assigned_admin = relationship("Institution_Staff", back_populates="death_reports")
+
+#Cadaver Model
+
+class CadaverStatus(str, enum.Enum):
+    available = "available"
+    in_use = "in_use"
+    completed = "completed"
+
+class Cadaver(Base):
+    
+    __tablename__ = "cadavers"
+    
+    id = Column( UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    donor_id = Column( UUID(as_uuid=True), ForeignKey("donors.id", ondelete="CASCADE"), nullable=False, unique=True)
+    family_member_id = Column(UUID(as_uuid=True), ForeignKey("family_members.id", ondelete="SET NULL"), nullable=True)
+    assigned_admin_id = Column(UUID(as_uuid=True), ForeignKey("institution_staff.id", ondelete="SET NULL"), nullable=True)
+    status = Column(String(20), nullable=False, default=CadaverStatus.available.value)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    
+    
+    donor = relationship("Donor", back_populates="cadavers")
+    family_member = relationship("Family_Member", back_populates="cadaver")
+    assigned_admin = relationship("Institution_Staff",foreign_keys=[assigned_admin_id], back_populates="managed_cadavers")
+    
 
 
 #Institution Model
@@ -300,5 +326,6 @@ class Institution_Staff(Base):
     
     user = relationship("User", back_populates="institution_staff")
     institution = relationship("Institution", back_populates="institution_staff")
-    death_reports = relationship("Death_Report", back_populates="institution_staff")
+    death_reports = relationship("Death_Report", back_populates="assigned_admin")
+    managed_cadavers = relationship("Cadaver", foreign_keys="Cadaver.assigned_admin_id", back_populates="assigned_admin")
     

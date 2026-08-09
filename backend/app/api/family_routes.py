@@ -7,6 +7,7 @@ from app.db.database import get_db
 from app.db.models import User, Certificate, Family_Member, Institution, Institution_Staff, Death_Report, DonorStatus, DeathReportStatus, StaffRole, UserRole
 from app.schemas.family_member_schema import LinkDonorRequest
 from app.api.auth_routes import get_current_user
+from app.services.donor_status_service import get_donor_status
 from app.services.notification_service import send_family_assigned_staff, send_assigned_staff_family
 
 router = APIRouter(
@@ -138,12 +139,12 @@ def report_death(
             detail="No active administrative staff available."
         )
     
-    assigned_staff = random.choice(staff_members)
+    assigned_admin = random.choice(staff_members)
     
     death_report = Death_Report(
         donor_id=donor.id,
         reported_by_family_id=family_member.id,
-        assigned_staff_id=assigned_staff.id,
+        assigned_admin_id=assigned_admin.id,
     )
     
     donor.status = DonorStatus.deceased.value
@@ -161,15 +162,15 @@ def report_death(
         donor_name=donor.user.full_name,
         institution_name=institution.name,
         institution_phone=institution.contact_phone,
-        staff_name=assigned_staff.full_name,
-        staff_phone=assigned_staff.phone,
-        staff_email=assigned_staff.email,
+        staff_name=assigned_admin.full_name,
+        staff_phone=assigned_admin.phone,
+        staff_email=assigned_admin.email,
     )
     
     background_tasks.add_task(
         send_assigned_staff_family,
-        staff_email=assigned_staff.email,
-        staff_name=assigned_staff.full_name,
+        staff_email=assigned_admin.email,
+        staff_name=assigned_admin.full_name,
         donor_name=donor.user.full_name,
         institution_name=institution.name,
         family_member_name=current_user.full_name,
@@ -190,11 +191,44 @@ def report_death(
             "contact_email": institution.contact_email,
         },
 
-        "assigned_staff": {
-            "name": assigned_staff.full_name,
-            "role": assigned_staff.role,
-            "phone": assigned_staff.phone,
-            "email": assigned_staff.email,
-            "employee_id": assigned_staff.employee_id,
+        "assigned_admin": {
+            "name": assigned_admin.full_name,
+            "role": assigned_admin.role,
+            "phone": assigned_admin.phone,
+            "email": assigned_admin.email,
+            "employee_id": assigned_admin.employee_id,
         }
     }
+
+@router.get("/donor_status")
+def donor_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "family_member":
+        raise HTTPException(
+            status_code=403,
+            detail="Only family members can access their status."
+        )
+    
+    family_member = (
+        db.query(Family_Member)
+        .filter(Family_Member.user_id == current_user.id)
+        .first()
+    )
+
+    if not family_member:
+        raise HTTPException(
+            status_code=404,
+            detail="Family member profile not found."
+        )
+
+    donor = family_member.donor
+
+    if not donor:
+        raise HTTPException(
+            status_code=404,
+            detail="No donor linked to this family member."
+        )
+
+    return get_donor_status(db, donor.id) 

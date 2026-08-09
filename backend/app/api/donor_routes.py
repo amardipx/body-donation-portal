@@ -10,17 +10,18 @@ from app.schemas.consent_schema import ConsentFormCreate
 from app.api.auth_routes import get_current_user
 from app.services.notification_service import (send_witness_verification, send_donor_confirmation)
 from app.services.certificate_service import generate_consent_certificate
+from app.services.donor_status_service import get_donor_status
 
 from fastapi.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="app/templates/pages")
 
 router = APIRouter(
-    prefix="/consent",
-    tags=["Consent"]
+    prefix="/donor",
+    tags=["Donor"]
 )
 
-@router.post("/")
+@router.post("/consent")
 def submit_consent(
     consent_data: ConsentFormCreate,
     background_task: BackgroundTasks,
@@ -118,7 +119,7 @@ def submit_consent(
     
         db.add(witness)
         verification_link = (
-            f"https://body-donation-portal.onrender.com/consent/verify/{verification_token}"
+            f"https://body-donation-portal.onrender.com/donor/consent/verify/{verification_token}"
         )
         
         witnesses_to_notify.append(
@@ -145,7 +146,7 @@ def submit_consent(
         "consent_status": consent.status
     }
 
-@router.get("/verify/{token}")
+@router.get("/consent/verify/{token}")
 def verify_witness(request: Request, background_task: BackgroundTasks, token: str, db: Session = Depends(get_db)):
     witness = (
         db.query(Consent_Witness)
@@ -202,3 +203,27 @@ def verify_witness(request: Request, background_task: BackgroundTasks, token: st
     )
 
     
+@router.get("/my_status")
+def get_my_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "donor":
+        raise HTTPException(
+            status_code=403,
+            detail="Only donors can access their status."
+        )
+    
+    donor = (
+        db.query(Donor)
+        .filter(Donor.user_id == current_user.id)
+        .first()
+    )
+
+    if not donor:
+        raise HTTPException(
+            status_code=404,
+            detail="Donor profile not found."
+        )
+
+    return get_donor_status(db, donor.id) 
