@@ -30,7 +30,7 @@ def get_donor_status(db: Session, donor_id):
             "name": f"{donor.first_name} "
                     f"{donor.middle_name + ' ' if donor.middle_name else ''}"
                     f"{donor.last_name}",
-            "consent_status": donor.status,
+            "donor_status": donor.status,
             "death_report": None,
             "cadaver": None
         }
@@ -50,8 +50,8 @@ def get_donor_status(db: Session, donor_id):
         response["donor"]["cadaver"] = {
             "status": cadaver.status,
             "assigned_admin": (
-                cadaver.assigned_admin_id.full_name
-                if cadaver.assigned_admin_id
+                cadaver.assigned_admin.full_name
+                if cadaver.assigned_admin
                 else None
             )
         }

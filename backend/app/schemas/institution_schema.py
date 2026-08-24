@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.db.models import StaffRole, InstitutionType
+from app.db.models import StaffRole, InstitutionType, DeathReportStatus, CadaverStatus
 
 class InstitutionCreate(BaseModel):
     type: InstitutionType
@@ -29,3 +29,11 @@ class InstitutionStaffCreate(InstitutionAdminCreate):
     
     role : StaffRole
 
+class DeathReportStatusUpdate(BaseModel):
+    certificate_number: str
+    status: DeathReportStatus
+
+
+class CadaverStatusUpdate(BaseModel):
+    certificate_number: str
+    status: CadaverStatus
