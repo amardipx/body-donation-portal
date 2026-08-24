@@ -23,3 +23,9 @@ app.include_router(rag_router)
 @app.get("/")
 def root():
     return {"message": "Body Donation Portal API"}
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok"
+    }
