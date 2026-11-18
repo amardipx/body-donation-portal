@@ -119,7 +119,7 @@ def submit_consent(
     
         db.add(witness)
         verification_link = (
-            f"https://body-donation-portal.onrender.com/donor/consent/verify/{verification_token}"
+            f"https://body-donation-portal-jj35.onrender.com/donor/consent/verify/{verification_token}"
         )
         
         witnesses_to_notify.append(
